@@ -207,7 +207,7 @@ const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(
 
 export default defineConfig({
   plugins,
-  base: process.env.GITHUB_ACTIONS ? "/reklam-analizi/" : "/",
+  base: process.env.GITHUB_ACTIONS ? "/reklam-analizi/" : process.env.STATIC_PREVIEW ? "./" : "/",
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
