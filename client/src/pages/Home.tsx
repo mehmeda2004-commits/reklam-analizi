@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Activity,
@@ -305,10 +305,32 @@ function InsightsView({ acted, setActed }: { acted: number | null; setActed: (id
   return <div className="view-stack"><div className="view-intro insight-intro"><div><div className="eyebrow"><span className="eyebrow-dot amber-dot" /> YAPAY ZEKA DESTEKLİ</div><h2>AI içgörüler</h2><p>Hesabınızdaki sinyalleri fırsata dönüştüren öneriler.</p></div><div className="ai-score"><Sparkles size={18} /><div><span>HESAP SAĞLIĞI</span><strong>86 / 100</strong></div></div></div><div className="insight-banner"><div className="banner-orbit" /><div className="banner-icon"><Sparkles size={24} /></div><div><strong>Bu hafta 3 büyüme fırsatı tespit edildi</strong><p>AI analiz motoru 30 günlük verinizi taradı ve toplamda ₺14.280 ek potansiyel gelir öngörüyor.</p></div><ArrowRight size={18} /></div><div className="full-insight-grid">{recommendations.map((item, index) => { const Icon = item.icon; return <article className={`full-insight-card insight-${item.accent}`} key={item.title}><div className="full-insight-top"><div className={`insight-icon insight-icon-${item.accent}`}><Icon size={19} /></div><span className={`priority-label priority-${item.accent}`}>{item.priority}</span></div><span className="insight-tag">{item.tag}</span><h3>{item.title}</h3><p>{item.rationale}</p><div className="impact-row"><strong>{item.impact}</strong>{acted === index ? <span className="action-done"><Check size={14} /> Uygulandı</span> : <button onClick={() => setActed(index)}>Öneriyi uygula <ArrowRight size={14} /></button>}</div></article>; })}</div></div>;
 }
 
-function ConnectView({ connected, setConnected }: { connected: boolean; setConnected: (connected: boolean) => void }) {
-  const [connecting, setConnecting] = useState(false);
-  const handleConnect = () => { setConnecting(true); window.setTimeout(() => { setConnecting(false); setConnected(true); }, 1200); };
-  return <div className="view-stack"><div className="view-intro"><div><div className="eyebrow"><span className="eyebrow-dot blue-dot" /> ENTEGRASYONLAR</div><h2>Reklam hesapları</h2><p>Meta reklam verilerinizi güvenli biçimde tek yerde yönetin.</p></div><button className="primary-button" onClick={handleConnect}><Plus size={16} /> Hesap bağla</button></div><div className="connect-hero"><div className="connect-hero-icon"><Facebook size={28} /></div><div><span className="eyebrow">META ADS BAĞLANTISI</span><h3>{connected ? "Meta hesabınız bağlı" : "Meta reklam hesabınızı bağlayın"}</h3><p>{connected ? "Reklam verileriniz otomatik olarak senkronize ediliyor." : "Kampanyalarınızı, harcamalarınızı ve dönüşümlerinizi canlı takip edin."}</p></div><div className="connect-hero-action">{connecting ? <span className="connecting-label"><RefreshCw size={15} className="spin" /> Bağlanıyor...</span> : connected ? <span className="connected-label"><CheckCircle2 size={16} /> Bağlı</span> : <button className="primary-button" onClick={handleConnect}>Facebook ile bağlan <ArrowRight size={15} /></button>}</div></div><div className="account-grid">{accounts.map((account) => <article className="account-card" key={account.id}><div className="account-card-top"><div className="account-platform" style={{ background: `${account.color}16`, color: account.color }}><Facebook size={17} /></div><StatusBadge status={account.status} /><button className="icon-button small-icon"><MoreHorizontal size={16} /></button></div><h3>{account.name}</h3><span className="account-id">{account.id}</span><div className="account-metrics"><div><span>Bu ay harcama</span><strong>{account.spend}</strong></div><div><span>Gösterim</span><strong>{account.impressions}</strong></div></div><div className="account-footer"><span><ShieldCheck size={14} /> Salt okunur erişim</span><button>Detay <ArrowRight size={13} /></button></div></article>)}</div><div className="security-note"><LockKeyhole size={18} /><div><strong>Verileriniz güvende</strong><p>OAuth bağlantısı yalnızca reklam raporlarını okuma izni ister. Erişimi istediğiniz zaman kaldırabilirsiniz.</p></div></div></div>;
+type MetaAccount = {
+  id: string;
+  name: string;
+  accountStatus: number;
+  currency: string;
+  spend: number;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  roas: number | null;
+};
+
+function ConnectView({ connected, accounts }: { connected: boolean; accounts: MetaAccount[] }) {
+  const moneyFor = (value: number, currency: string) => {
+    try {
+      return new Intl.NumberFormat("tr-TR", { style: "currency", currency: currency || "TRY", maximumFractionDigits: 0 }).format(value);
+    } catch {
+      return String(value);
+    }
+  };
+
+  const handleConnect = () => {
+    window.location.href = "/api/meta/login";
+  };
+
+  return <div className="view-stack"><div className="view-intro"><div><div className="eyebrow"><span className="eyebrow-dot blue-dot" /> ENTEGRASYONLAR</div><h2>Reklam hesapları</h2><p>Meta reklam verilerinizi güvenli biçimde tek yerde yönetin.</p></div><button className="primary-button" onClick={handleConnect}><Plus size={16} /> Hesap bağla</button></div><div className="connect-hero"><div className="connect-hero-icon"><Facebook size={28} /></div><div><span className="eyebrow">META ADS BAĞLANTISI</span><h3>{connected ? "Meta hesabınız bağlı" : "Meta reklam hesabınızı bağlayın"}</h3><p>{connected ? "Meta API üzerinden alınan reklam hesapları aşağıda listeleniyor." : "Facebook izin sayfasına giderek reklam hesabınızı güvenli biçimde bağlayın."}</p></div><div className="connect-hero-action">{connected ? <span className="connected-label"><CheckCircle2 size={16} /> Bağlı</span> : <button className="primary-button" onClick={handleConnect}>Facebook ile bağlan <ArrowRight size={15} /></button>}</div></div>{connected && accounts.length === 0 ? <div className="panel" style={{ padding: 24 }}>Bağlantı kuruldu ancak bu kullanıcı için listelenecek reklam hesabı bulunamadı. Meta Business erişimlerini ve uygulama izinlerini kontrol edin.</div> : null}<div className="account-grid">{accounts.map((account, index) => <article className="account-card" key={account.id}><div className="account-card-top"><div className="account-platform" style={{ background: `${index % 2 === 0 ? "#2d7dff" : "#8b5cf6"}16`, color: index % 2 === 0 ? "#2d7dff" : "#8b5cf6" }}><Facebook size={17} /></div><StatusBadge status={account.accountStatus === 1 ? "Aktif" : "Erişim var"} /><button className="icon-button small-icon" title="Meta reklam hesabı"><MoreHorizontal size={16} /></button></div><h3>{account.name}</h3><span className="account-id">{account.id}</span><div className="account-metrics"><div><span>Bu ay harcama</span><strong>{moneyFor(account.spend, account.currency)}</strong></div><div><span>Gösterim</span><strong>{compact.format(account.impressions)}</strong></div></div><div className="account-footer"><span><ShieldCheck size={14} /> Salt okunur raporlama</span><span>{account.clicks.toLocaleString("tr-TR")} tıklama</span></div></article>)}</div><div className="security-note"><LockKeyhole size={18} /><div><strong>Verileriniz güvende</strong><p>Meta OAuth bağlantısı kullanılır. İzinleri Meta ayarlarından istediğiniz zaman kaldırabilirsiniz.</p></div></div></div>;
 }
 
 function SettingsView() {
@@ -332,9 +354,19 @@ export default function Home() {
   const [syncing, setSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState("");
   const [acted, setActed] = useState<number | null>(null);
-  const [connected, setConnected] = useState(true);
+  const [connected, setConnected] = useState(false);
+  const [metaAccounts, setMetaAccounts] = useState<MetaAccount[]>([]);
+  useEffect(() => {
+    fetch("/api/meta/status", { credentials: "include" })
+      .then(async (response) => response.ok ? response.json() : { connected: false, accounts: [] })
+      .then((status: { connected: boolean; accounts: MetaAccount[] }) => {
+        setConnected(Boolean(status.connected));
+        setMetaAccounts(Array.isArray(status.accounts) ? status.accounts : []);
+      })
+      .catch(() => { setConnected(false); setMetaAccounts([]); });
+  }, []);
   const pageTitle = useMemo(() => ({ dashboard: ["Genel Bakış", "Hesabınızın performansını tek bakışta takip edin."], campaigns: ["Kampanyalar", "Kampanyalarınızı yönetin ve verimi artırın."], insights: ["AI İçgörüler", "Verilerinizin söylediği fırsatları keşfedin."], connect: ["Hesaplar", "Bağlı reklam hesaplarınızı yönetin."], settings: ["Ayarlar", "Çalışma alanı tercihlerinizi güncelleyin."] }[view]), [view]);
   const sync = () => { setSyncing(true); setSyncMessage(""); window.setTimeout(() => { setSyncing(false); setSyncMessage("Az önce güncellendi"); window.setTimeout(() => setSyncMessage(""), 3200); }, 1200); };
   if (!loggedIn) return <LoginScreen onLogin={() => setLoggedIn(true)} />;
-  return <div className="app-shell"><Sidebar view={view} setView={setView} onLogout={() => setLoggedIn(false)} /><main className="main-area"><Topbar title={pageTitle[0]} subtitle={pageTitle[1]} onSync={sync} syncing={syncing} onConnect={() => setView("connect")} /><div className="page-content">{view === "dashboard" && <Dashboard range={range} setRange={setRange} metric={metric} setMetric={setMetric} setView={setView} syncMessage={syncMessage} onSync={sync} syncing={syncing} acted={acted} setActed={setActed} />}{view === "campaigns" && <CampaignsView />}{view === "insights" && <InsightsView acted={acted} setActed={setActed} />}{view === "connect" && <ConnectView connected={connected} setConnected={setConnected} />}{view === "settings" && <SettingsView />}</div></main><MobileNav view={view} setView={setView} /></div>;
+  return <div className="app-shell"><Sidebar view={view} setView={setView} onLogout={() => setLoggedIn(false)} /><main className="main-area"><Topbar title={pageTitle[0]} subtitle={pageTitle[1]} onSync={sync} syncing={syncing} onConnect={() => setView("connect")} /><div className="page-content">{view === "dashboard" && <Dashboard range={range} setRange={setRange} metric={metric} setMetric={setMetric} setView={setView} syncMessage={syncMessage} onSync={sync} syncing={syncing} acted={acted} setActed={setActed} />}{view === "campaigns" && <CampaignsView />}{view === "insights" && <InsightsView acted={acted} setActed={setActed} />}{view === "connect" && <ConnectView connected={connected} accounts={metaAccounts} />}{view === "settings" && <SettingsView />}</div></main><MobileNav view={view} setView={setView} /></div>;
 }
