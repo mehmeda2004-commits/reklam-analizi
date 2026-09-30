@@ -32,7 +32,7 @@ const APP_ID = process.env.META_APP_ID || "";
 const APP_SECRET = process.env.META_APP_SECRET || "";
 const REDIRECT_URI =
   process.env.META_REDIRECT_URI || "http://localhost:3000/auth/callback";
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
 function graphUrl(version: string, path: string) {
   return new URL(`https://graph.facebook.com/${version}/${path.replace(/^\//, "")}`);
