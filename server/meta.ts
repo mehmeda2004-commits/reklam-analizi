@@ -214,7 +214,7 @@ export function registerMetaRoutes(app: import("express").Express) {
 
     setCookie(res, "meta_oauth_state", state, 600);
 
-    const url = graphUrl(GRAPH_VERSION, "/dialog/oauth");
+    const url = new URL(`https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth`);
     url.searchParams.set("client_id", APP_ID);
     url.searchParams.set("redirect_uri", REDIRECT_URI);
     url.searchParams.set("state", state);
