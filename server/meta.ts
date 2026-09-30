@@ -97,11 +97,18 @@ async function readJson(response: Response) {
   return payload as Record<string, any>;
 }
 
-async function exchangeCodeForToken(code: string) {
+function getRedirectUri(req: import("express").Request) {
+  if (process.env.META_REDIRECT_URI) return process.env.META_REDIRECT_URI;
+  const forwardedProto = String(req.headers["x-forwarded-proto"] || "").split(",")[0].trim();
+  const protocol = forwardedProto || req.protocol;
+  return `${protocol}://${req.get("host")}/api/meta/callback`;
+}
+
+async function exchangeCodeForToken(code: string, redirectUri: string) {
   const url = graphUrl(GRAPH_VERSION, "/oauth/access_token");
   url.searchParams.set("client_id", APP_ID);
   url.searchParams.set("client_secret", APP_SECRET);
-  url.searchParams.set("redirect_uri", REDIRECT_URI);
+  url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("code", code);
 
   const shortLived = await readJson(await fetch(url));
@@ -215,7 +222,7 @@ export function registerMetaRoutes(app: import("express").Express) {
 
     const url = new URL(`https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth`);
     url.searchParams.set("client_id", APP_ID);
-    url.searchParams.set("redirect_uri", REDIRECT_URI);
+    url.searchParams.set("redirect_uri", getRedirectUri(req));
     url.searchParams.set("state", state);
     url.searchParams.set("response_type", "code");
     url.searchParams.set("scope", "ads_read,business_management");
@@ -224,6 +231,7 @@ export function registerMetaRoutes(app: import("express").Express) {
   });
 
   app.get("/api/meta/callback", async (req, res) => {
+    const redirectUri = getRedirectUri(req);
     const { code, state, error, error_description } = req.query;
 
     const redirectError = (message: string) => {
@@ -261,7 +269,7 @@ export function registerMetaRoutes(app: import("express").Express) {
     clearCookie(res, "meta_oauth_state");
 
     try {
-      const { accessToken, expiresIn } = await exchangeCodeForToken(code);
+      const { accessToken, expiresIn } = await exchangeCodeForToken(code, redirectUri);
       const accounts = await fetchAccounts(accessToken);
 
       const sessionId = randomBytes(32).toString("hex");
