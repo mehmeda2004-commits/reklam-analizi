@@ -4,7 +4,7 @@
 
 1. https://developers.facebook.com/apps/ adresinden bir uygulama oluştur veya mevcut uygulamanı aç.
 2. Facebook Login / Facebook Login for Business ürününü yapılandır.
-3. OAuth redirect URI olarak tam olarak http://localhost:3000/auth/callback ekle.
+3. OAuth redirect URI olarak tam olarak http://localhost:3000/api/meta/callback ekle.
 4. Uygulamanın App ID ve App Secret değerlerini al.
 5. Uygulamaya Marketing API erişimini ekle ve ads_read ile business_management izinlerini yapılandır. Meta, uygulama moduna ve kullanıcılarına göre App Review / Advanced Access isteyebilir.
 
