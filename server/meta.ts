@@ -32,7 +32,6 @@ const APP_ID = process.env.META_APP_ID || "";
 const APP_SECRET = process.env.META_APP_SECRET || "";
 const REDIRECT_URI =
   process.env.META_REDIRECT_URI || "http://localhost:3000/auth/callback";
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
 function graphUrl(version: string, path: string) {
   return new URL(`https://graph.facebook.com/${version}/${path.replace(/^\//, "")}`);
@@ -224,13 +223,13 @@ export function registerMetaRoutes(app: import("express").Express) {
     res.redirect(url.toString());
   });
 
-  app.get("/auth/callback", async (req, res) => {
+  app.get("/api/meta/callback", async (req, res) => {
     const { code, state, error, error_description } = req.query;
 
     if (error) {
       clearCookie(res, "meta_oauth_state");
       res.redirect(
-        `${FRONTEND_URL}/auth/callback?error=${encodeURIComponent(
+        "/auth/callback?error=${encodeURIComponent(
           String(error_description || error),
         )}`,
       );
@@ -239,7 +238,7 @@ export function registerMetaRoutes(app: import("express").Express) {
 
     if (typeof code !== "string" || typeof state !== "string") {
       res.redirect(
-        `${FRONTEND_URL}/auth/callback?error=${encodeURIComponent(
+        "/auth/callback?error=${encodeURIComponent(
           "Meta geri dönüşünde code veya state bulunamadı.",
         )}`,
       );
@@ -252,7 +251,7 @@ export function registerMetaRoutes(app: import("express").Express) {
     if (!savedState || savedState.expiresAt <= Date.now()) {
       oauthStates.delete(state);
       res.redirect(
-        `${FRONTEND_URL}/auth/callback?error=${encodeURIComponent(
+        "/auth/callback?error=${encodeURIComponent(
           "OAuth oturumu geçersiz veya süresi dolmuş.",
         )}`,
       );
@@ -263,7 +262,7 @@ export function registerMetaRoutes(app: import("express").Express) {
       oauthStates.delete(state);
       clearCookie(res, "meta_oauth_state");
       res.redirect(
-        `${FRONTEND_URL}/auth/callback?error=${encodeURIComponent(
+        "/auth/callback?error=${encodeURIComponent(
           "OAuth state doğrulaması başarısız.",
         )}`,
       );
@@ -286,10 +285,10 @@ export function registerMetaRoutes(app: import("express").Express) {
 
       setCookie(res, "meta_session", sessionId, Math.max(300, expiresIn));
 
-      res.redirect(`${FRONTEND_URL}/auth/callback?success=1`);
+      res.redirect("/auth/callback?success=1`);
     } catch (error) {
       res.redirect(
-        `${FRONTEND_URL}/auth/callback?error=${encodeURIComponent(
+        "/auth/callback?error=${encodeURIComponent(
           error instanceof Error ? error.message : "Meta bağlantısı başarısız.",
         )}`,
       );
