@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: reklam-rapor
+    runtime: node
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: META_APP_ID
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: META_REDIRECT_URI
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: META_GRAPH_VERSION
+        value: v26.0
+      - key: META_MARKETING_VERSION
+        value: v25.0

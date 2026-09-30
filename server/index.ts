@@ -2,13 +2,17 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
+import { registerMetaRoutes } from "./meta.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
+  app.set("trust proxy", 1);
   const server = createServer(app);
+
+  registerMetaRoutes(app);
 
   // Serve static files from dist/public in production
   const staticPath =
@@ -23,9 +27,9 @@ async function startServer() {
     res.sendFile(path.join(staticPath, "index.html"));
   });
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3001;
 
-  server.listen(port, () => {
+  server.listen(Number(port), "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${port}/`);
   });
 }
