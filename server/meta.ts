@@ -226,22 +226,18 @@ export function registerMetaRoutes(app: import("express").Express) {
   app.get("/api/meta/callback", async (req, res) => {
     const { code, state, error, error_description } = req.query;
 
+    const redirectError = (message: string) => {
+      res.redirect("/auth/callback?error=" + encodeURIComponent(message));
+    };
+
     if (error) {
       clearCookie(res, "meta_oauth_state");
-      res.redirect(
-        "/auth/callback?error=${encodeURIComponent(
-          String(error_description || error),
-        )}`,
-      );
+      redirectError(String(error_description || error));
       return;
     }
 
     if (typeof code !== "string" || typeof state !== "string") {
-      res.redirect(
-        "/auth/callback?error=${encodeURIComponent(
-          "Meta geri dönüşünde code veya state bulunamadı.",
-        )}`,
-      );
+      redirectError("Meta geri dönüşünde code veya state bulunamadı.");
       return;
     }
 
@@ -250,22 +246,14 @@ export function registerMetaRoutes(app: import("express").Express) {
 
     if (!savedState || savedState.expiresAt <= Date.now()) {
       oauthStates.delete(state);
-      res.redirect(
-        "/auth/callback?error=${encodeURIComponent(
-          "OAuth oturumu geçersiz veya süresi dolmuş.",
-        )}`,
-      );
+      redirectError("OAuth oturumu geçersiz veya süresi dolmuş.");
       return;
     }
 
     if (cookies.meta_oauth_state !== state) {
       oauthStates.delete(state);
       clearCookie(res, "meta_oauth_state");
-      res.redirect(
-        "/auth/callback?error=${encodeURIComponent(
-          "OAuth state doğrulaması başarısız.",
-        )}`,
-      );
+      redirectError("OAuth state doğrulaması başarısız.");
       return;
     }
 
@@ -284,13 +272,10 @@ export function registerMetaRoutes(app: import("express").Express) {
       });
 
       setCookie(res, "meta_session", sessionId, Math.max(300, expiresIn));
-
-      res.redirect("/auth/callback?success=1`);
+      res.redirect("/auth/callback?success=1");
     } catch (error) {
-      res.redirect(
-        "/auth/callback?error=${encodeURIComponent(
-          error instanceof Error ? error.message : "Meta bağlantısı başarısız.",
-        )}`,
+      redirectError(
+        error instanceof Error ? error.message : "Meta bağlantısı başarısız.",
       );
     }
   });
