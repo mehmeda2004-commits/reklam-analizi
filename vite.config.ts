@@ -223,7 +223,11 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    strictPort: false, // Will find next available port if 3000 is busy
+    strictPort: true,
+    proxy: {
+      "/api": "http://localhost:3001",
+      "/auth": "http://localhost:3001",
+    },
     host: true,
     allowedHosts: [
       ".manuspre.computer",
