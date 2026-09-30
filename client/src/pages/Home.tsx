@@ -124,7 +124,7 @@ function formatMetric(value: number, metric: MetricKey) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const active = status === "ACTIVE" || status === "Bağlı";
+  const active = status === "ACTIVE" || status === "Bağlı" || status === "Aktif";
   return (
     <span className={`status-badge ${active ? "status-active" : "status-paused"}`}>
       <span className="status-dot" />
